@@ -1,0 +1,1 @@
+{"root":["./src/databasepg.ts","./src/index.ts","./src/config/db.ts","./src/controller/admin/index.ts","./src/controller/supplier/index.ts","./src/middleware/auth.ts","./src/routes/admin.ts","./src/routes/supplier.ts","./src/utils/auth.ts"],"version":"5.7.2"}
