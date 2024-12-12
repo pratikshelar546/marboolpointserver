@@ -3,29 +3,27 @@ import { client } from "../../config/db";
 import { comaprePassword } from "../../utils/auth";
 import { user } from "../../commanTypes/types";
 
-const findSupplierviaEmail =
-  "SELECT email,  password FROM supplier WHERE email = $1";
+const findSupplierviaEmail = "SELECT * FROM supplier WHERE phoneNumber = $1";
 
 const addSupplier = async (req: Request, res: Response): Promise<any> => {
   try {
-    const { name, email, password, address } = req.body;
+    const { name, phoneNumber, address } = req.body;
 
-    if (!name || !email || !password) {
+    if (!name || !phoneNumber || !address) {
       return res.status(400).json({ message: "Invalid data" });
     }
 
-    const exituser = await client.query(findSupplierviaEmail, [email]);
+    const exituser = await client.query(findSupplierviaEmail, [phoneNumber]);
     if (exituser.rows.length > 0) {
       return res
         .status(400)
-        .json({ message: "Supplier already exists with this email id" });
+        .json({ message: "Supplier already exists with this phone number" });
     }
 
     const addSupplier = await client.query(
-      "INSERT INTO supplier (name, email, password,admin_id) VALUES ($1, $2, $3, $4) RETURNING name, email, supplier_id",
-      [name, email, password, 1]
+      "INSERT INTO supplier (name,phoneNumber,address,admin_id) VALUES ($1, $2, $3, $4)",
+      [name, phoneNumber, address, 1]
     );
-    console.log(addSupplier);
 
     res.status(200).json({ data: addSupplier.rows[0] });
   } catch (error) {
