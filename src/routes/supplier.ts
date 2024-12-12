@@ -1,7 +1,8 @@
 import { Router } from "express";
-import { addSupplier } from "../controller/supplier";
+import { addSupplier, loginSuplier } from "../controller/supplier";
 
-const rounter = Router();
+const router = Router();
 
-rounter.post("/addsupplier", addSupplier);
-export default rounter;
+router.post("/addsupplier", addSupplier);
+router.post("/login", loginSuplier);
+export default router;
