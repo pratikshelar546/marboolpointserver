@@ -1,6 +1,7 @@
 import express from "express";
 import { client } from "./config/db";
 import supplierRounter from "./routes/supplier";
+import productRouter from "./routes/Products";
 const app = express();
 app.use(express.json());
 
@@ -21,6 +22,8 @@ client
 // INSERT INTO admin(email, name, password) VALUES('pratik@fhfh.cncn','pratik','121212')
 
 app.use("/api/v1/supplier", supplierRounter);
+
+app.use("/api/v1/products", productRouter);
 
 app.listen(8080, () => {
   console.log("Server is running on port 8080");

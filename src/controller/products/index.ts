@@ -15,7 +15,10 @@ const addProduct = async (req: Request, res: Response): Promise<any> => {
       [name, description, rate, size, stock, supplier]
     );
 
-    res.status(200).json({ product: addProduct.rows[0] });
+    res.status(200).json({
+      product: addProduct.rows[0],
+      message: "Produt added successfully",
+    });
   } catch (error) {
     console.log(error);
 
@@ -25,3 +28,22 @@ const addProduct = async (req: Request, res: Response): Promise<any> => {
     });
   }
 };
+
+const getAllProduct = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const products = await client.query("SELECT * FROM product");
+    res.status(200).json({
+      product: products.rows,
+      message: "All Product fetched",
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Something went wrong",
+      error: error,
+    });
+  }
+};
+
+export { addProduct ,getAllProduct};
