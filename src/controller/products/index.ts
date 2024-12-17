@@ -3,16 +3,16 @@ import { client } from "../../config/db";
 
 const addProduct = async (req: Request, res: Response): Promise<any> => {
   try {
-    const { name, description, rate, size, stock, supplier } = req.body;
+    const { name, description, rate, size, stock, supplier_id } = req.body;
 
     const userNotExist = await client.query(
       "SELECT * FROM supplier WHERE supplier_id = $1",
-      [supplier]
+      [supplier_id]
     );
     if (!userNotExist) res.status(404).json({ message: "user not exist" });
     const addProduct = await client.query(
-      "INSERT INTO product (name,description,rate,size,stock,supplier_id) VALUES ($1,$2,$3,$4,$5,$6)",
-      [name, description, rate, size, stock, supplier]
+      "INSERT INTO product (name,supplier_id,description,rate,size,stock) VALUES ($1,$2,$3,$4,$5,$6)",
+      [name, supplier_id, description, rate, size, stock]
     );
 
     res.status(200).json({
@@ -46,4 +46,4 @@ const getAllProduct = async (req: Request, res: Response): Promise<any> => {
   }
 };
 
-export { addProduct ,getAllProduct};
+export { addProduct, getAllProduct };

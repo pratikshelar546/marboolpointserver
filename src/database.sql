@@ -13,4 +13,4 @@ CREATE TABLE supplier (supplier_id SERIAL PRIMARY KEY,admin_id INT NOT NULL,name
 CREATE TABLE seller(seller_id SERIAL PRIMARY KEY, name VARCHAR(100) NOT NULL,email VARCHAR(150) NOT NULL, phoneNumber VARCHAR(13),address TEXT);
 
 -- create product tbable
-CREATE TABLE product(product_id SERIAL PRIMARY KEY,name VARCHAR(100),supplier_id INT,description TEXT,rate INT NOT NULL,size INT NOT NULL,stock INT, photo TEXT,FOREIGN KEY (supplier_id) REFERENCES supplier (supplier_id) ON DELETE CASCADE);
+CREATE TABLE product(product_id SERIAL PRIMARY KEY,name VARCHAR(100),supplier_id INT NOT NULL,description TEXT,rate INT NOT NULL,size INT NOT NULL,stock INT, photo TEXT,FOREIGN KEY (supplier_id) REFERENCES supplier (supplier_id) ON DELETE CASCADE);
