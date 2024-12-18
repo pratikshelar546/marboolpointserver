@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import { client } from "../../config/db";
 import { v2 as cloudinary } from "cloudinary";
+import QRCode from "qrcode";
+import { generateUniqueCode } from "../../utils/auth";
 
 const addProduct = async (req: Request, res: Response): Promise<any> => {
   try {
@@ -37,9 +39,21 @@ const addProduct = async (req: Request, res: Response): Promise<any> => {
       photo = url; // Assign URL to photo
     }
 
+    const frontendurl = `${process.env.FRONTEND_URL}/products/`;
+    // const uniqueCode = `${name.split(0, 2)}${userNotExist.rows[0].name.split(0,2)}`;
+    const uniqueCode = generateUniqueCode(name, userNotExist.rows[0].name);
+
+    const qrcode = await QRCode.toDataURL(frontendurl + uniqueCode);
+
+    const qrCodeStore = await cloudinary.uploader.upload(qrcode, {
+      folder: "Product_QRcode",
+    });
+
+    const ProductQrCode = qrCodeStore.secure_url;
+
     const addProduct = await client.query(
-      "INSERT INTO product (name,supplier_id,description,rate,size,stock,photo) VALUES ($1,$2,$3,$4,$5,$6,$7)",
-      [name, supplier_id, description, rate, size, stock, photo]
+      "INSERT INTO product (name,supplier_id,description,rate,size,stock,photo,qr_code) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING name,description,rate,size,stock,photo,qr_code",
+      [name, supplier_id, description, rate, size, stock, photo, ProductQrCode]
     );
 
     return res.status(200).json({
@@ -58,7 +72,8 @@ const addProduct = async (req: Request, res: Response): Promise<any> => {
 
 const getAllProduct = async (req: Request, res: Response): Promise<any> => {
   try {
-    const products = await client.query("SELECT * FROM product");
+    const products = await client.query("SELECT * FROM product WHERE isdeleted=false");
+
     return res.status(200).json({
       product: products.rows,
       message: "All Product fetched",
@@ -104,6 +119,14 @@ const updateProduct = async (req: Request, res: Response): Promise<any> => {
     // const values = [id, name, description, rate, size, stock];
     // const updatedProduct = await client.query(query, values);
 
+    const product = await client.query(
+      "SELECT * FROM product WHERE product_id= $1",
+      [id]
+    );
+
+    if (product.rows.length === 0) {
+      return res.status(404).json({ message: "product not found" });
+    }
     let query = "UPDATE product SET ";
     const values = [];
     let index = 1;
@@ -140,7 +163,8 @@ const deleteProduct = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
 
-    await client.query(`DELETE FROM product WHERE product_id=${id}`);
+    // await client.query(`DELETE FROM product WHERE product_id=${id}`);
+    await client.query(`UPDATE product set isdeleted=true WHERE product_id=${id}`)
     // console.log(deleteProduct);
 
     // if (deleteProduct.rows.length === 0) {

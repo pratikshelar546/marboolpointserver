@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { query, Request, Response } from "express";
 import { client } from "../../config/db";
 import { comaprePassword } from "../../utils/auth";
 import { user } from "../../commanTypes/types";
@@ -62,4 +62,99 @@ const loginSuplier = async (req: Request, res: Response): Promise<any> => {
   }
 };
 
-export { addSupplier, loginSuplier };
+const getSupplier = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const allSupplier = await client.query("SELECT * FROM supplier;");
+    console.log(allSupplier);
+
+    return res
+      .status(200)
+      .json({ message: "Fetched all supplier", supplier: allSupplier.rows });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Something went wrong",
+      error: error,
+    });
+  }
+};
+
+const getSupplierById = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { id } = req.params;
+    const supplier = await client.query(
+      `SELECT * FROM supplier WHERE supplier_id=$1`,
+      [id]
+    );
+
+    if (supplier.rows.length === 0) {
+      return res.status(404).json({ message: "Supplier not found" });
+    }
+
+    return res.status(200).json({ supplier: supplier.rows[0] });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Something went wrong",
+      error: error,
+    });
+  }
+};
+
+const updateSupplier = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { id } = req.params;
+
+    const supplier = await client.query(
+      `SELECT * FROM supplier WHERE supplier_id=$1`,
+      [id]
+    );
+
+    if (supplier.rows.length === 0) {
+      return res.status(404).json({ message: "Supplier not found" });
+    }
+
+    let qurey = "UPDATE supplier SET ";
+    let values = [];
+    let index = 1;
+    for (const [key, value] of Object.entries(req.body)) {
+      qurey += `${key}=$${index}, `;
+      values.push(value);
+      index++;
+    }
+
+    qurey = qurey.slice(0, -2);
+    qurey += ` WHERE supplier_id = $${
+      values.length + 1
+    } RETURNING supplier_id,`;
+
+    values.push(id);
+
+    for (const [key] of Object.entries(req.body)) {
+      qurey += ` ${key},`;
+    }
+    qurey = qurey.slice(0, -1);
+    const updateSupplier = await client.query(qurey, values);
+
+    return res
+      .status(200)
+      .json({ message: "supplier udpated", supplier: updateSupplier });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Something went wrong",
+      error: error,
+    });
+  }
+};
+
+export {
+  addSupplier,
+  loginSuplier,
+  getSupplier,
+  getSupplierById,
+  updateSupplier,
+};

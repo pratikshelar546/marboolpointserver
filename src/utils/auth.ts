@@ -27,3 +27,21 @@ export const genrateJwtToken = async (credenstials: string) => {
     throw new Error("JWT token genration falied");
   }
 };
+
+
+export const generateUniqueCode = (name: string, supplierName: string): string => {
+  // Get first 2 letters of name (if available)
+  const namePart = name.slice(0, 2).toUpperCase();
+
+  // Get first 2 letters of supplier name (if available)
+  const supplierPart = supplierName.slice(0, 2).toUpperCase();
+
+  // Get the current year
+  const year = new Date().getFullYear();
+
+  // Generate 4 random digits
+  const randomDigits = Math.floor(1000 + Math.random() * 9000); // Ensures 4 digits
+
+  // Combine all parts
+  return `MU${namePart}${supplierPart}${year}${randomDigits}`;
+};
