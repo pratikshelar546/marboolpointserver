@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   addSupplier,
+  deleteSupplier,
   getSupplier,
   getSupplierById,
   loginSuplier,
@@ -13,5 +14,6 @@ router.post("/addsupplier", addSupplier);
 router.post("/login", loginSuplier);
 router.get("/getAllSupplier", getSupplier);
 router.get("/getSupplier/:id", getSupplierById);
-router.put("/updateSupplier/:id", updateSupplier)
+router.put("/updateSupplier/:id", updateSupplier);
+router.delete("/deleteSupplier/:id", deleteSupplier);
 export default router;

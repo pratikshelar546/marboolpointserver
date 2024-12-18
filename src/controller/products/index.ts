@@ -72,7 +72,12 @@ const addProduct = async (req: Request, res: Response): Promise<any> => {
 
 const getAllProduct = async (req: Request, res: Response): Promise<any> => {
   try {
-    const products = await client.query("SELECT * FROM product WHERE isdeleted=false");
+    const products = await client.query(
+      "SELECT * FROM product WHERE isdeleted=false"
+    );
+    if (products.rows.length === 0) {
+      return res.status(204).json({ message: "There is no product exist" });
+    }
 
     return res.status(200).json({
       product: products.rows,
@@ -162,14 +167,9 @@ const updateProduct = async (req: Request, res: Response): Promise<any> => {
 const deleteProduct = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
-
-    // await client.query(`DELETE FROM product WHERE product_id=${id}`);
-    await client.query(`UPDATE product set isdeleted=true WHERE product_id=${id}`)
-    // console.log(deleteProduct);
-
-    // if (deleteProduct.rows.length === 0) {
-    //   return res.status(404).json({ message: "product not found" });
-    // }
+    await client.query(
+      `UPDATE product set isdeleted=true WHERE product_id=${id}`
+    );
 
     return res.status(200).json({ message: "product deleted successfully" });
   } catch (error) {

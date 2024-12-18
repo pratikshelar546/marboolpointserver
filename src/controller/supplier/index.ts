@@ -64,9 +64,11 @@ const loginSuplier = async (req: Request, res: Response): Promise<any> => {
 
 const getSupplier = async (req: Request, res: Response): Promise<any> => {
   try {
-    const allSupplier = await client.query("SELECT * FROM supplier;");
-    console.log(allSupplier);
+    const allSupplier = await client.query("SELECT * FROM supplier WHERE isDeleted=FALSE;");
 
+    if(allSupplier.rows.length ===0){
+      return res.status(204).json({message:"There is no supplier exist"})
+    }
     return res
       .status(200)
       .json({ message: "Fetched all supplier", supplier: allSupplier.rows });
@@ -151,10 +153,30 @@ const updateSupplier = async (req: Request, res: Response): Promise<any> => {
   }
 };
 
+const deleteSupplier = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { id } = req.params;
+    await client.query(
+      "UPDATE supplier SET isDeleted=TRUE WHERE supplier_id=$1",
+      [id]
+    );
+
+    return res.status(200).json({ message: "Supplier deleted" });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Something went wrong",
+      error: error,
+    });
+  }
+};
+
 export {
   addSupplier,
   loginSuplier,
   getSupplier,
   getSupplierById,
   updateSupplier,
+  deleteSupplier
 };
