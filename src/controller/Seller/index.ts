@@ -1,4 +1,4 @@
-import { Request, Response, query } from 'express';
+import { Request, Response, query } from "express";
 import { client } from "../../config/db";
 import {
   genrateJwtToken,
@@ -23,7 +23,7 @@ const createSeller = async (req: Request, res: Response): Promise<any> => {
       [name, email, phoneNumber, address, newPassword]
     );
 
-    const token = await genrateJwtToken(seller.rows[0].seller_id);
+    const token = await genrateJwtToken(seller.rows[0].seller_id, "seller");
 
     return res.status(200).json({ message: "Seller created", token });
   } catch (error) {
@@ -60,7 +60,7 @@ const loginSeller = async (req: Request, res: Response): Promise<any> => {
     if (!compare)
       return res.status(401).json({ message: "Invalid credentials" });
 
-    const token = await genrateJwtToken(seller.seller_id);
+    const token = await genrateJwtToken(seller.seller_id, "seller");
 
     return res.status(200).json({ message: "Login succesfully", token });
   } catch (error) {
@@ -94,34 +94,33 @@ const getAllSeller = async (req: Request, res: Response): Promise<any> => {
   }
 };
 
-const updateSelller = async (req:Request,res:Response) :Promise<any>=>{
+const updateSelller = async (req: Request, res: Response): Promise<any> => {
   try {
-    const {id} = req.params;
+    const { id } = req.params;
 
-    const sellerExist = await client.query("SELECT * FROM seller WHERE seller_id=$1", [id]);
+    const sellerExist = await client.query(
+      "SELECT * FROM seller WHERE seller_id=$1",
+      [id]
+    );
 
     const seller = sellerExist.rows[0];
 
-    if(!seller) return res.status(404).json({message:"USer not found"});
+    if (!seller) return res.status(404).json({ message: "USer not found" });
 
     let query = " UPDATE SELLER SET";
 
-    const values =[];
-    let index =1;
+    const values = [];
+    let index = 1;
 
-    for(const [key,value] of Object.entries(req.body)){
-query += ` ${key} =$${index}, `;
-values.push(value)
-index++
+    for (const [key, value] of Object.entries(req.body)) {
+      query += ` ${key} =$${index}, `;
+      values.push(value);
+      index++;
     }
-query = query.slice(0,-2);
-query += ` WHERE seller_id = $${values.length+1 } RETURNING supplier_id`
+    query = query.slice(0, -2);
+    query += ` WHERE seller_id = $${values.length + 1} RETURNING supplier_id`;
 
-
-console.log(query, values);
-
-
-    
+    console.log(query, values);
   } catch (error) {
     console.log("*************update seller*****************");
     console.log(error);
@@ -130,6 +129,6 @@ console.log(query, values);
       message: "Somthing went wrong",
     });
   }
-  }
+};
 
 export { createSeller, getAllSeller, loginSeller };

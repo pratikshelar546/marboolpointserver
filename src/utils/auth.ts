@@ -25,8 +25,8 @@ export const genrateJwtToken = async (
   role: "admin" | "seller"
 ) => {
   try {
-    const token = jwt.sign({ admin: credenstials }, secret_key, {
-      expiresIn: "15d",
+    const token = jwt.sign({ user: credenstials, role: role }, secret_key, {
+      expiresIn: "10d",
     });
     return token;
   } catch (error) {

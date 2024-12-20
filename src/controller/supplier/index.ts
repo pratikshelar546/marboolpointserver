@@ -25,8 +25,10 @@ const addSupplier = async (req: Request, res: Response): Promise<any> => {
       [name, phoneNumber, address, 1]
     );
 
-    res.status(200).json({ data: addSupplier.rows[0] });
+    res.status(200).json({ message: "Supplier added successfully" });
   } catch (error) {
+    console.log("Supplier");
+
     console.log(error);
 
     res.status(500).json({
@@ -64,10 +66,12 @@ const loginSuplier = async (req: Request, res: Response): Promise<any> => {
 
 const getSupplier = async (req: Request, res: Response): Promise<any> => {
   try {
-    const allSupplier = await client.query("SELECT * FROM supplier WHERE isDeleted=FALSE;");
+    const allSupplier = await client.query(
+      "SELECT * FROM supplier WHERE isDeleted=FALSE;"
+    );
 
-    if(allSupplier.rows.length ===0){
-      return res.status(204).json({message:"There is no supplier exist"})
+    if (allSupplier.rows.length === 0) {
+      return res.status(204).json({ message: "There is no supplier exist" });
     }
     return res
       .status(200)
@@ -178,5 +182,5 @@ export {
   getSupplier,
   getSupplierById,
   updateSupplier,
-  deleteSupplier
+  deleteSupplier,
 };

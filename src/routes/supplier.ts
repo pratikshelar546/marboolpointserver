@@ -7,10 +7,15 @@ import {
   loginSuplier,
   updateSupplier,
 } from "../controller/supplier";
+import passport from "passport";
 
 const router = Router();
 
-router.post("/addsupplier", addSupplier);
+router.post(
+  "/addsupplier",
+  passport.authenticate("jwt", { session: false }),
+  addSupplier
+);
 router.post("/login", loginSuplier);
 router.get("/getAllSupplier", getSupplier);
 router.get("/getSupplier/:id", getSupplierById);

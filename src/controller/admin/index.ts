@@ -32,7 +32,7 @@ const signupAdmin = async (req: Request, res: Response): Promise<any> => {
     if (!passwordMatch)
       return res.status(401).json({ message: "Inavalid credenstials" });
 
-    const token =await genrateJwtToken(admin.id);
+    const token = await genrateJwtToken(admin.admin_id, "admin");
 
     return res.status(200).json({
       message: "sign up successfully",
@@ -59,7 +59,7 @@ const createAdmin = async (req: Request, res: Response): Promise<any> => {
       [name, email, hashPass]
     );
 
-    const token = await genrateJwtToken(admin.rows[0].admin_id);
+    const token = await genrateJwtToken(admin.rows[0].admin_id, "admin");
 
     return res.status(200).json({ message: "Admin created", token: token });
   } catch (error) {
