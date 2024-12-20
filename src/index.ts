@@ -6,10 +6,27 @@ import sellerRouter from "./routes/Seller";
 import adminRoute from "./routes/Admin";
 import dotenv from "dotenv";
 import { v2 as cloudinary } from "cloudinary";
+import passport from "passport";
+import session from "express-session";
+import privateRouteConfig from "./config/auth";
+import cors from "cors";
 
 dotenv.config();
 const app = express();
 app.use(express.json());
+privateRouteConfig(passport);
+// googleConfig(passport);
+app.use(express.json());
+app.use(session({ secret: "MARBOL_ADMIN" }));
+app.use(passport.initialize());
+app.use(passport.session());
+const corsOptions = {
+  origin: "*",
+  credentials: true,
+  optionSuccessStatus: 200,
+};
+
+app.use(cors(corsOptions));
 
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,

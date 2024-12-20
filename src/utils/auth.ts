@@ -20,7 +20,10 @@ export const comaprePassword = async (
   }
 };
 
-export const genrateJwtToken = async (credenstials: string) => {
+export const genrateJwtToken = async (
+  credenstials: number,
+  role: "admin" | "seller"
+) => {
   try {
     const token = jwt.sign({ admin: credenstials }, secret_key, {
       expiresIn: "15d",
