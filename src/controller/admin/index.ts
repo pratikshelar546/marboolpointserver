@@ -1,42 +1,74 @@
 import { Request, Response } from "express";
 
-import { comaprePassword, genrateJwtToken } from "../../utils/auth";
+import {
+  comaprePassword,
+  genrateJwtToken,
+  hashPasssword,
+} from "../../utils/auth";
 import { client } from "../../config/db";
 
 const findadminwitheemail = "SELECT * FROM admin WHERE email =$1";
 
-const signupAdmin = async (req: Request, res: Response) => {
+interface CreateAdmin {
+  name?: string;
+  email: string;
+  password: string;
+}
+
+const signupAdmin = async (req: Request, res: Response): Promise<any> => {
   try {
-    const { email, password } = req.body;
+    const { email, password }: CreateAdmin = req.body;
     if (!email || !password)
       return res.status(400).json({ message: "inavild data" });
 
-    const existAdmin = await client.query(findadminwitheemail, email);
+    const existAdmin = await client.query(findadminwitheemail, [email]);
 
     if (existAdmin.rows.length === 0)
       return res
         .status(404)
         .json({ message: "Admin with this creadential not found" });
     const admin = existAdmin.rows[0];
-    // const passwordMatch = await comaprePassword(password, admin.password);
-    // if (!passwordMatch)
-    //   return res.status(401).json({ message: "Inavalid credenstials" });
+    const passwordMatch = await comaprePassword(password, admin.password);
+    if (!passwordMatch)
+      return res.status(401).json({ message: "Inavalid credenstials" });
 
-    const token = genrateJwtToken(admin.id);
+    const token =await genrateJwtToken(admin.id);
 
-    res.status(200).json({
+    return res.status(200).json({
       message: "sign up successfully",
-      admin: {
-        name: admin.name,
-        email: admin.email,
-      },
+      token,
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       message: "something went wrong",
       error: error,
     });
   }
 };
 
-export { signupAdmin };
+const createAdmin = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { name, email, password }: CreateAdmin = req.body;
+    if (!name || !email || !password)
+      return res.status(400).json({ message: "Invalid data" });
+
+    const hashPass = await hashPasssword(password);
+
+    const admin = await client.query(
+      "INSERT INTO admin (name,email,password) VALUES ($1,$2,$3) RETURNING admin_id",
+      [name, email, hashPass]
+    );
+
+    const token = await genrateJwtToken(admin.rows[0].admin_id);
+
+    return res.status(200).json({ message: "Admin created", token: token });
+  } catch (error) {
+    console.log("*************update seller*****************");
+    console.log(error);
+
+    return res.status(500).json({
+      message: "Somthing went wrong",
+    });
+  }
+};
+export { signupAdmin, createAdmin };

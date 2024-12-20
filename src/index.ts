@@ -3,6 +3,7 @@ import { client } from "./config/db";
 import supplierRounter from "./routes/Supplier";
 import productRouter from "./routes/Products";
 import sellerRouter from "./routes/Seller";
+import adminRoute from "./routes/Admin";
 import dotenv from "dotenv";
 import { v2 as cloudinary } from "cloudinary";
 
@@ -26,7 +27,7 @@ client
 // INSERT INTO admin(email, name, password) VALUES('pratik@fhfh.cncn','pratik','121212')
 
 app.use("/api/v1/supplier", supplierRounter);
-
+app.use("/api/v1/admin", adminRoute);
 app.use("/api/v1/products", productRouter);
 app.use("/api/v1/seller", sellerRouter);
 
