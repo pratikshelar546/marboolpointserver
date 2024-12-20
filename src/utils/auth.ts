@@ -3,6 +3,11 @@ import jwt from "jsonwebtoken";
 
 const secret_key = "MARBOL_ADMIN";
 
+export const hashPasssword = async (password: string): Promise<string> => {
+  const hash = bcrypt.hash(password, 8);
+  return hash;
+};
+
 export const comaprePassword = async (
   password: string,
   savedpassowrd: string
@@ -28,8 +33,10 @@ export const genrateJwtToken = async (credenstials: string) => {
   }
 };
 
-
-export const generateUniqueCode = (name: string, supplierName: string): string => {
+export const generateUniqueCode = (
+  name: string,
+  supplierName: string
+): string => {
   // Get first 2 letters of name (if available)
   const namePart = name.slice(0, 2).toUpperCase();
 
