@@ -12,7 +12,7 @@ const addProduct = async (req: Request, res: Response): Promise<any> => {
       "SELECT * FROM supplier WHERE supplier_id = $1",
       [supplier_id]
     );
-    if (!userNotExist) res.status(404).json({ message: "user not exist" });
+    if (!userNotExist) res.status(404).json({success:false, message: "user not exist" });
     let photo = "";
     if (req.file) {
       const filePath = req?.file?.path;
@@ -56,14 +56,14 @@ const addProduct = async (req: Request, res: Response): Promise<any> => {
       [name, supplier_id, description, rate, size, stock, photo, ProductQrCode]
     );
 
-    return res.status(200).json({
+    return res.status(200).json({success: true,
       product: addProduct.rows[0],
       message: "Produt added successfully",
     });
   } catch (error) {
     console.log(error);
 
-    return res.status(500).json({
+    return res.status(500).json({success:false,
       message: "Something went wrong",
       error: error,
     });
@@ -76,17 +76,17 @@ const getAllProduct = async (req: Request, res: Response): Promise<any> => {
       "SELECT * FROM product WHERE isdeleted=false"
     );
     if (products.rows.length === 0) {
-      return res.status(204).json({ message: "There is no product exist" });
+      return res.status(204).json({success:false, message: "There is no product exist" });
     }
 
-    return res.status(200).json({
-      product: products.rows,
+    return res.status(200).json({success: true,
+      data: products.rows,
       message: "All Product fetched",
     });
   } catch (error) {
     console.log(error);
 
-    return res.status(500).json({
+    return res.status(500).json({success:false,
       message: "Something went wrong",
       error: error,
     });
@@ -102,15 +102,15 @@ const getProductById = async (req: Request, res: Response): Promise<any> => {
     );
 
     if (product.rows.length === 0) {
-      return res.status(404).json({ message: "product not found" });
+      return res.status(404).json({success:false, message: "product not found" });
     }
     return res
       .status(200)
-      .json({ message: "Product fetched", product: product.rows[0] });
+      .json({success: true, message: "Product fetched", data: product.rows[0] });
   } catch (error) {
     console.log(error);
 
-    return res.status(500).json({
+    return res.status(500).json({success:false,
       message: "Something went wrong",
       error: error,
     });
@@ -130,7 +130,7 @@ const updateProduct = async (req: Request, res: Response): Promise<any> => {
     );
 
     if (product.rows.length === 0) {
-      return res.status(404).json({ message: "product not found" });
+      return res.status(404).json({success:false, message: "product not found" });
     }
     let query = "UPDATE product SET ";
     const values = [];
@@ -153,11 +153,11 @@ const updateProduct = async (req: Request, res: Response): Promise<any> => {
 
     return res
       .status(200)
-      .json({ message: "Product updated", product: updatedProduct.rows });
+      .json({success: true, message: "Product updated", data: updatedProduct.rows });
   } catch (error) {
     console.log(error);
 
-    return res.status(500).json({
+    return res.status(500).json({success:false,
       message: "Something went wrong",
       error: error,
     });
@@ -171,11 +171,12 @@ const deleteProduct = async (req: Request, res: Response): Promise<any> => {
       `UPDATE product set isdeleted=true WHERE product_id=${id}`
     );
 
-    return res.status(200).json({ message: "product deleted successfully" });
+    return res.status(200).json({success: true, message: "product deleted successfully" });
   } catch (error) {
     console.log(error);
 
     return res.status(500).json({
+      success:false,
       message: "Something went wrong",
       error: error,
     });

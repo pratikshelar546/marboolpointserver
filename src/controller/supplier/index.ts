@@ -10,14 +10,14 @@ const addSupplier = async (req: Request, res: Response): Promise<any> => {
     const { name, phoneNumber, address } = req.body;
 
     if (!name || !phoneNumber || !address) {
-      return res.status(400).json({ message: "Invalid data" });
+      return res.status(400).json({success: false, message: "Invalid data" });
     }
 
     const exituser = await client.query(findSupplierviaEmail, [phoneNumber]);
     if (exituser.rows.length > 0) {
       return res
         .status(400)
-        .json({ message: "Supplier already exists with this phone number" });
+        .json({success: false, message: "Supplier already exists with this phone number" });
     }
 
     const addSupplier = await client.query(
@@ -25,13 +25,13 @@ const addSupplier = async (req: Request, res: Response): Promise<any> => {
       [name, phoneNumber, address, 1]
     );
 
-    res.status(200).json({ message: "Supplier added successfully" });
+    res.status(200).json({success: true, message: "Supplier added successfully" });
   } catch (error) {
     console.log("Supplier");
 
     console.log(error);
 
-    res.status(500).json({
+    res.status(500).json({success: false,
       message: "Something went wrong",
       error: error,
     });
@@ -42,22 +42,22 @@ const loginSuplier = async (req: Request, res: Response): Promise<any> => {
   try {
     const { email, password } = req.body;
     if (!email || !password)
-      return res.status(400).json({ message: "Invalid data" });
+      return res.status(400).json({success: false, message: "Invalid data" });
 
     const userExist: user = (await client.query(findSupplierviaEmail, [email]))
       .rows[0];
 
     if (!userExist)
-      return res.status(404).json({ message: "Supplier dose not exist" });
+      return res.status(404).json({success: false, message: "Supplier dose not exist" });
     console.log(userExist);
 
     const savedpassowrd = userExist.password;
     if (await comaprePassword(password, savedpassowrd))
-      return res.status(200).json({ message: "Login Successfully.." });
+      return res.status(200).json({success: true, message: "Login Successfully.." });
 
-    return res.status(401).json({ message: "Authentication falied" });
+    return res.status(401).json({success: false, message: "Authentication falied" });
   } catch (error) {
-    res.status(500).json({
+    res.status(500).json({success: false,
       message: "Something went wrong",
       error: error,
     });
@@ -71,15 +71,16 @@ const getSupplier = async (req: Request, res: Response): Promise<any> => {
     );
 
     if (allSupplier.rows.length === 0) {
-      return res.status(204).json({ message: "There is no supplier exist" });
+      return res.status(204).json({success: false, message: "There is no supplier exist" });
     }
     return res
       .status(200)
-      .json({ message: "Fetched all supplier", supplier: allSupplier.rows });
+      .json({success: true, message: "Fetched all supplier", data: allSupplier.rows });
   } catch (error) {
     console.log(error);
 
     res.status(500).json({
+      success: false,
       message: "Something went wrong",
       error: error,
     });
@@ -95,14 +96,15 @@ const getSupplierById = async (req: Request, res: Response): Promise<any> => {
     );
 
     if (supplier.rows.length === 0) {
-      return res.status(404).json({ message: "Supplier not found" });
+      return res.status(404).json({success: false, message: "Supplier not found" });
     }
 
-    return res.status(200).json({ supplier: supplier.rows[0] });
+    return res.status(200).json({success: true, data: supplier.rows[0] });
   } catch (error) {
     console.log(error);
 
     res.status(500).json({
+      success: false,
       message: "Something went wrong",
       error: error,
     });
@@ -119,7 +121,7 @@ const updateSupplier = async (req: Request, res: Response): Promise<any> => {
     );
 
     if (supplier.rows.length === 0) {
-      return res.status(404).json({ message: "Supplier not found" });
+      return res.status(404).json({success: false, message: "Supplier not found" });
     }
 
     let qurey = "UPDATE supplier SET ";
@@ -146,11 +148,11 @@ const updateSupplier = async (req: Request, res: Response): Promise<any> => {
 
     return res
       .status(200)
-      .json({ message: "supplier udpated", supplier: updateSupplier });
+      .json({success: true, message: "supplier udpated", data: updateSupplier });
   } catch (error) {
     console.log(error);
 
-    res.status(500).json({
+    res.status(500).json({success: false,
       message: "Something went wrong",
       error: error,
     });
@@ -165,11 +167,12 @@ const deleteSupplier = async (req: Request, res: Response): Promise<any> => {
       [id]
     );
 
-    return res.status(200).json({ message: "Supplier deleted" });
+    return res.status(200).json({ message: "Supplier deleted", success: true });
   } catch (error) {
     console.log(error);
 
     res.status(500).json({
+      success: false,
       message: "Something went wrong",
       error: error,
     });
