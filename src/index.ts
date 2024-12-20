@@ -20,6 +20,7 @@ app.use(express.json());
 app.use(session({ secret: "MARBOL_ADMIN" }));
 app.use(passport.initialize());
 app.use(passport.session());
+
 const corsOptions = {
   origin: "*",
   credentials: true,
