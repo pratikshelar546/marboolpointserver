@@ -3,6 +3,7 @@ import {
   createSeller,
   deleteSeller,
   getAllSeller,
+  getSellerById,
   loginSeller,
   updateSelller,
 } from "../controller/Seller";
@@ -25,4 +26,5 @@ router.delete(
   deleteSeller 
 );
 
+router.get("/getSellerById",getSellerById)
 export default router;

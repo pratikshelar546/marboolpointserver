@@ -10,14 +10,15 @@ const addSupplier = async (req: Request, res: Response): Promise<any> => {
     const { name, phoneNumber, address } = req.body;
 
     if (!name || !phoneNumber || !address) {
-      return res.status(400).json({success: false, message: "Invalid data" });
+      return res.status(400).json({ success: false, message: "Invalid data" });
     }
 
     const exituser = await client.query(findSupplierviaEmail, [phoneNumber]);
     if (exituser.rows.length > 0) {
-      return res
-        .status(400)
-        .json({success: false, message: "Supplier already exists with this phone number" });
+      return res.status(400).json({
+        success: false,
+        message: "Supplier already exists with this phone number",
+      });
     }
 
     const addSupplier = await client.query(
@@ -25,57 +26,62 @@ const addSupplier = async (req: Request, res: Response): Promise<any> => {
       [name, phoneNumber, address, 1]
     );
 
-    res.status(200).json({success: true, message: "Supplier added successfully" });
+    res
+      .status(200)
+      .json({ success: true, message: "Supplier added successfully" });
   } catch (error) {
     console.log("Supplier");
 
     console.log(error);
 
-    res.status(500).json({success: false,
-      message: "Something went wrong",
-      error: error,
-    });
+    res
+      .status(500)
+      .json({ success: false, message: "Something went wrong", error: error });
   }
 };
 
 const loginSuplier = async (req: Request, res: Response): Promise<any> => {
   try {
-    const { email, password } = req.body;
-    if (!email || !password)
-      return res.status(400).json({success: false, message: "Invalid data" });
+    const { phoneNumber } = req.body;
+    if (!phoneNumber)
+      return res.status(400).json({ success: false, message: "Invalid data" });
 
-    const userExist: user = (await client.query(findSupplierviaEmail, [email]))
-      .rows[0];
+    const userExist: user = (
+      await client.query(findSupplierviaEmail, [phoneNumber])
+    ).rows[0];
 
-    if (!userExist)
-      return res.status(404).json({success: false, message: "Supplier dose not exist" });
     console.log(userExist);
+    if (!userExist || userExist.isdeleted === true)
+      return res
+        .status(404)
+        .json({ success: false, message: "Supplier dose not exist" });
 
-    const savedpassowrd = userExist.password;
-    if (await comaprePassword(password, savedpassowrd))
-      return res.status(200).json({success: true, message: "Login Successfully.." });
-
-    return res.status(401).json({success: false, message: "Authentication falied" });
+    return res
+      .status(200)
+      .json({ success: true, message: "Login Successfully.." });
   } catch (error) {
-    res.status(500).json({success: false,
-      message: "Something went wrong",
-      error: error,
-    });
+    res
+      .status(500)
+      .json({ success: false, message: "Something went wrong", error: error });
   }
 };
 
 const getSupplier = async (req: Request, res: Response): Promise<any> => {
   try {
     const allSupplier = await client.query(
-      "SELECT * FROM supplier WHERE isDeleted=FALSE;"
+      "SELECT * FROM supplier WHERE isDeleted=false;"
     );
 
     if (allSupplier.rows.length === 0) {
-      return res.status(204).json({success: false, message: "There is no supplier exist" });
+      return res
+        .status(204)
+        .json({ success: false, message: "There is no supplier exist" });
     }
-    return res
-      .status(200)
-      .json({success: true, message: "Fetched all supplier", data: allSupplier.rows });
+    return res.status(200).json({
+      success: true,
+      message: "Fetched all supplier",
+      data: allSupplier.rows,
+    });
   } catch (error) {
     console.log(error);
 
@@ -95,11 +101,13 @@ const getSupplierById = async (req: Request, res: Response): Promise<any> => {
       [id]
     );
 
-    if (supplier.rows.length === 0) {
-      return res.status(404).json({success: false, message: "Supplier not found" });
+    if (supplier.rows.length === 0 || supplier.rows[0].isdeleted === true) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Supplier not found" });
     }
 
-    return res.status(200).json({success: true, data: supplier.rows[0] });
+    return res.status(200).json({ success: true, data: supplier.rows[0] });
   } catch (error) {
     console.log(error);
 
@@ -120,8 +128,10 @@ const updateSupplier = async (req: Request, res: Response): Promise<any> => {
       [id]
     );
 
-    if (supplier.rows.length === 0) {
-      return res.status(404).json({success: false, message: "Supplier not found" });
+    if (supplier.rows.length === 0 || supplier.rows[0].isdeleted === true) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Supplier not found" });
     }
 
     let qurey = "UPDATE supplier SET ";
@@ -146,24 +156,36 @@ const updateSupplier = async (req: Request, res: Response): Promise<any> => {
     qurey = qurey.slice(0, -1);
     const updateSupplier = await client.query(qurey, values);
 
-    return res
-      .status(200)
-      .json({success: true, message: "supplier udpated", data: updateSupplier });
+    return res.status(200).json({
+      success: true,
+      message: "supplier udpated",
+      data: updateSupplier,
+    });
   } catch (error) {
     console.log(error);
 
-    res.status(500).json({success: false,
-      message: "Something went wrong",
-      error: error,
-    });
+    res
+      .status(500)
+      .json({ success: false, message: "Something went wrong", error: error });
   }
 };
 
 const deleteSupplier = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
+    const supplier = await client.query(
+      `SELECT * FROM supplier WHERE supplier_id=$1`,
+      [id]
+    );
+
+    if (supplier.rows.length === 0 || supplier.rows[0].isdeleted === true) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Supplier not found" });
+    }
+
     await client.query(
-      "UPDATE supplier SET isDeleted=TRUE WHERE supplier_id=$1",
+      "UPDATE supplier SET isDeleted=true WHERE supplier_id=$1",
       [id]
     );
 

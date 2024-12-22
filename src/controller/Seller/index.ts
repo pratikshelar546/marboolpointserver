@@ -18,10 +18,27 @@ const createSeller = async (req: Request, res: Response): Promise<any> => {
       "SELECT * FROM seller WHERE email=$1",
       [email]
     );
-    if (sellerExist.rows.length !== 0)
-      return res
-        .status(400)
-        .json({ success: false, message: "Seller already exist" });
+    if (sellerExist?.rows[0]?.isdeleted === true) {
+    const newPassword = await hashPasssword(password);
+
+      await client.query(
+        "UPDATE seller SET name= $1,email=$2,phoneNumber=$3,address=$4,password=$5 WHERE seller_id = $6",
+        [
+          name,
+          email,
+          phoneNumber,
+          address,
+          newPassword,
+          sellerExist.rows[0].seller_id,
+        ]
+      );
+      return res.status(200).json({ success: true, message: "User updated" });
+    }
+
+    // if (sellerExist.rows.length !== 0)
+    //   return res
+    //     .status(400)
+    //     .json({ success: false, message: "Seller already exist" });
 
     const newPassword = await hashPasssword(password);
 
@@ -61,7 +78,7 @@ const loginSeller = async (req: Request, res: Response): Promise<any> => {
     );
 
     const seller = sellerExist.rows[0];
-    if (!seller)
+    if (!seller || seller.isdeleted === true)
       return res
         .status(404)
         .json({ success: false, message: "Seller dose not exist" });
@@ -90,8 +107,8 @@ const loginSeller = async (req: Request, res: Response): Promise<any> => {
 
 const getAllSeller = async (req: Request, res: Response): Promise<any> => {
   try {
-    const sellers = await client.query("SELECT * FROM seller");
-    if (sellers.rows.length === 0)
+    const sellers = await client.query("SELECT * FROM seller WHERE isdeleted = false");
+    if (sellers.rows.length === 0 )
       return res
         .status(404)
         .json({ success: false, message: "Seller not found" });
@@ -127,7 +144,7 @@ const updateSelller = async (req: Request, res: Response): Promise<any> => {
 
     const seller = sellerExist.rows[0];
 
-    if (!seller)
+    if (!seller || seller.isdeleted === true)
       return res
         .status(404)
         .json({ success: false, message: "USer not found" });
@@ -172,6 +189,16 @@ const deleteSeller = async (req: Request, res: Response): Promise<any> => {
   try {
     const { seller_id } = req.user as Seller;
 
+    const seller = await client.query(
+      "SELECT isdeleted FROM seller WHERE seller_id = $1",
+      [seller_id]
+    );
+
+    if (seller.rows[0].length === 0 || seller.rows[0].isdeleted == true)
+      return res
+        .status(404)
+        .json({ message: "User not found", success: false });
+
     await client.query(
       "UPDATE seller SET isdeleted = true WHERE seller_id =$1",
       [seller_id]
@@ -191,4 +218,28 @@ const deleteSeller = async (req: Request, res: Response): Promise<any> => {
   }
 };
 
-export { createSeller, getAllSeller, loginSeller, updateSelller, deleteSeller };
+const getSellerById = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { id } = req.params;
+    const seller = await client.query(
+      "SELECT * FROM seller WHERE seller_id= $1",
+      [id]
+    );
+
+    if (seller.rows.length === 0 || seller.rows[0].isdeleted === true) {
+      return res.status(404).json({success:false, message: "User not found" });
+    }
+    return res
+      .status(200)
+      .json({success: true, message: "Product fetched", data: seller.rows[0] });
+  } catch (error) {
+    console.log(error);
+
+    return res.status(500).json({success:false,
+      message: "Something went wrong",
+      error: error,
+    });
+  }
+};
+
+export { createSeller, getAllSeller, loginSeller, updateSelller, deleteSeller ,getSellerById};
