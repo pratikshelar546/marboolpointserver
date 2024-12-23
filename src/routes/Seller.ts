@@ -26,5 +26,5 @@ router.delete(
   deleteSeller 
 );
 
-router.get("/getSellerById",getSellerById)
+router.get("/getSellerById/:id",getSellerById)
 export default router;

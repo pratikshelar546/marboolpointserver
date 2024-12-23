@@ -4,6 +4,7 @@ import supplierRounter from "./routes/Supplier";
 import productRouter from "./routes/Products";
 import sellerRouter from "./routes/Seller";
 import adminRoute from "./routes/Admin";
+import orderRoutes from "./routes/order";
 import dotenv from "dotenv";
 import { v2 as cloudinary } from "cloudinary";
 import passport from "passport";
@@ -48,7 +49,7 @@ app.use("/api/v1/supplier", supplierRounter);
 app.use("/api/v1/admin", adminRoute);
 app.use("/api/v1/products", productRouter);
 app.use("/api/v1/seller", sellerRouter);
-
+app.use("/api/v1/order", orderRoutes);
 app.listen(8080, () => {
   console.log("Server is running on port 8080");
 });
