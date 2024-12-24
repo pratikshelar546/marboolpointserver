@@ -7,7 +7,6 @@ import { generateUniqueCode } from "../../utils/auth";
 const addProduct = async (req: Request, res: Response): Promise<any> => {
   try {
     const { name, description, rate, size, supplier_id } = req.body;
-    console.log(req.body);
 
     const userNotExist = await client.query(
       "SELECT * FROM supplier WHERE supplier_id = $1",
@@ -15,6 +14,20 @@ const addProduct = async (req: Request, res: Response): Promise<any> => {
     );
     if (!userNotExist)
       res.status(404).json({ success: false, message: "Supplier not exist" });
+
+    const productMatch = await client.query(
+      "SELECT * FROM product WHERE supplier_id =$1 AND name=$2",
+      [supplier_id, name]
+    );
+    
+    if (productMatch.rowCount !== 0)
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "Product already exist with same name for same supplier",
+        });
+
     let photo = "";
     if (req.file) {
       const filePath = req?.file?.path;
