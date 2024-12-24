@@ -214,7 +214,9 @@ const deleteOrder = async (req: Request, res: Response): Promise<any> => {
         .status(404)
         .json({ success: false, message: "Order not found" });
 
-    await client.query("DELETE FROM orders WHERE order_id =$1", [id]);
+    await client.query("UPDATE orders set isdeleted=true WHERE order_id =$1", [
+      id,
+    ]);
 
     return res
       .status(200)

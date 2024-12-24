@@ -54,16 +54,23 @@ const addProduct = async (req: Request, res: Response): Promise<any> => {
 
     const addProduct = await client.query(
       "INSERT INTO product (name,supplier_id,description,rate,size,photo,qr_code,id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING product_id, name,description,rate,size,photo,qr_code,id",
-      [name, supplier_id, description, rate, size, photo, ProductQrCode,uniqueCode]
+      [
+        name,
+        supplier_id,
+        description,
+        rate,
+        size,
+        photo,
+        ProductQrCode,
+        uniqueCode,
+      ]
     );
 
-    return res
-      .status(200)
-      .json({
-        success: true,
-        product: addProduct.rows[0],
-        message: "Produt added successfully",
-      });
+    return res.status(200).json({
+      success: true,
+      product: addProduct.rows[0],
+      message: "Produt added successfully",
+    });
   } catch (error) {
     console.log(error);
 
@@ -84,13 +91,11 @@ const getAllProduct = async (req: Request, res: Response): Promise<any> => {
         .json({ success: false, message: "There is no product exist" });
     }
 
-    return res
-      .status(200)
-      .json({
-        success: true,
-        data: products.rows,
-        message: "All Product fetched",
-      });
+    return res.status(200).json({
+      success: true,
+      data: products.rows,
+      message: "All Product fetched",
+    });
   } catch (error) {
     console.log(error);
 
@@ -113,13 +118,11 @@ const getProductById = async (req: Request, res: Response): Promise<any> => {
         .status(404)
         .json({ success: false, message: "product not found" });
     }
-    return res
-      .status(200)
-      .json({
-        success: true,
-        message: "Product fetched",
-        data: product.rows[0],
-      });
+    return res.status(200).json({
+      success: true,
+      message: "Product fetched",
+      data: product.rows[0],
+    });
   } catch (error) {
     console.log(error);
 
@@ -146,8 +149,6 @@ const updateProduct = async (req: Request, res: Response): Promise<any> => {
         .status(404)
         .json({ success: false, message: "product not found" });
     }
-
-
 
     let query = "UPDATE product SET ";
     const values = [];
@@ -183,9 +184,9 @@ const updateProduct = async (req: Request, res: Response): Promise<any> => {
       const { url } = await uploadPromise; // Await the promise and destructure the URL
       photo = url; // Assign URL to photo
 
-      query += `photo =$${index} , ` 
+      query += `photo =$${index} , `;
       values.push(photo);
-      index++
+      index++;
     }
 
     query = query.slice(0, -2);
@@ -195,21 +196,19 @@ const updateProduct = async (req: Request, res: Response): Promise<any> => {
     for (const [key] of Object.entries(req.body)) {
       query += ` ${key},`;
     }
-    if(req.file){
-      query += "photo,"
+    if (req.file) {
+      query += "photo,";
     }
     console.log(query, values);
-    
+
     query = query.slice(0, -1);
     const updatedProduct = await client.query(query, values);
 
-    return res
-      .status(200)
-      .json({
-        success: true,
-        message: "Product updated",
-        data: updatedProduct.rows,
-      });
+    return res.status(200).json({
+      success: true,
+      message: "Product updated",
+      data: updatedProduct.rows,
+    });
   } catch (error) {
     console.log(error);
 
@@ -233,7 +232,8 @@ const deleteProduct = async (req: Request, res: Response): Promise<any> => {
         .status(404)
         .json({ message: "Product not found", success: false });
     await client.query(
-      `UPDATE product set isdeleted=true WHERE product_id=${id}`
+      `UPDATE product set isdeleted=true WHERE product_id=$1`,
+      [id]
     );
 
     return res

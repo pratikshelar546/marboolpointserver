@@ -24,4 +24,4 @@ CREATE TABLE seller(seller_id SERIAL PRIMARY KEY, name VARCHAR(100) NOT NULL,ema
 -- create product tbable
 CREATE TABLE product(product_id SERIAL PRIMARY KEY,name VARCHAR(100),supplier_id INT NOT NULL,description TEXT,rate INT NOT NULL,size INT NOT NULL, photo TEXT,isdeleted BOOLEAN DEFAULT false,FOREIGN KEY (supplier_id) REFERENCES supplier (supplier_id) ON DELETE CASCADE);
 
-CREATE TABLE orders(order_id SERIAL PRIMARY KEY, product_id INT NOT NULL,seller_id INT NOT NULL,qyt INT NOT NULL CHECK (qyt> 0), orderdate TIMESTAMP DEFAULT CURRENT_TIMESTAMP, status VARCHAR(50) DEFAULT 'pending',FOREIGN KEY (product_id) REFERENCES product(product_id), FOREIGN KEY (seller_id) REFERENCES seller(seller_id));
+CREATE TABLE orders(order_id SERIAL PRIMARY KEY, product_id INT NOT NULL,seller_id INT NOT NULL,qyt INT NOT NULL CHECK (qyt> 0), orderdate TIMESTAMP DEFAULT CURRENT_TIMESTAMP, status VARCHAR(50) DEFAULT 'pending',isdeleted BOOLEAN DEFAULT false,FOREIGN KEY (product_id) REFERENCES product(product_id), FOREIGN KEY (seller_id) REFERENCES seller(seller_id));
