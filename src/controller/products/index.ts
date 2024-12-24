@@ -19,14 +19,23 @@ const addProduct = async (req: Request, res: Response): Promise<any> => {
       "SELECT * FROM product WHERE supplier_id =$1 AND name=$2",
       [supplier_id, name]
     );
-    
-    if (productMatch.rowCount !== 0)
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "Product already exist with same name for same supplier",
+    if (productMatch.rowCount !== 0) {
+      if (productMatch.rows[0].isdeleted) {
+        const updateDelete = await client.query(
+          "UPDATE product SET isdeleted=false WHERE product_id=$1 RETURNING product_id,name,rate,size",
+          [productMatch.rows[0].product_id]
+        );
+        return res.status(200).json({
+          success: true,
+          message: "Product added",
+          data: updateDelete.rows[0],
         });
+      }
+      return res.status(400).json({
+        success: false,
+        message: "Product already exist with same name for same supplier",
+      });
+    }
 
     let photo = "";
     if (req.file) {

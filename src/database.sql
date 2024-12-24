@@ -22,6 +22,6 @@ CREATE TABLE supplier (
 CREATE TABLE seller(seller_id SERIAL PRIMARY KEY, name VARCHAR(100) NOT NULL,email VARCHAR(150) NOT NULL, phoneNumber VARCHAR(13),address TEXT,isdeleted BOOLEAN DEFAULT false);
 
 -- create product tbable
-CREATE TABLE product(product_id SERIAL PRIMARY KEY,name VARCHAR(100),supplier_id INT NOT NULL,description TEXT,rate INT NOT NULL,size INT NOT NULL, photo TEXT,isdeleted BOOLEAN DEFAULT false,FOREIGN KEY (supplier_id) REFERENCES supplier (supplier_id) ON DELETE CASCADE);
+CREATE TABLE product(product_id SERIAL PRIMARY KEY,name VARCHAR(100),supplier_id INT NOT NULL,description TEXT,rate INT NOT NULL,size INT NOT NULL, photo TEXT ,qr_code TEXT,id VARCHAR(50),isdeleted BOOLEAN DEFAULT false,FOREIGN KEY (supplier_id) REFERENCES supplier (supplier_id) ON DELETE CASCADE);
 
 CREATE TABLE orders(order_id SERIAL PRIMARY KEY, product_id INT NOT NULL,seller_id INT NOT NULL,qyt INT NOT NULL CHECK (qyt> 0), orderdate TIMESTAMP DEFAULT CURRENT_TIMESTAMP, status VARCHAR(50) DEFAULT 'pending',isdeleted BOOLEAN DEFAULT false,FOREIGN KEY (product_id) REFERENCES product(product_id), FOREIGN KEY (seller_id) REFERENCES seller(seller_id));
