@@ -53,8 +53,8 @@ const addProduct = async (req: Request, res: Response): Promise<any> => {
     const ProductQrCode = qrCodeStore.secure_url;
 
     const addProduct = await client.query(
-      "INSERT INTO product (name,supplier_id,description,rate,size,photo,qr_code) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING name,description,rate,size,photo,qr_code",
-      [name, supplier_id, description, rate, size, photo, ProductQrCode]
+      "INSERT INTO product (name,supplier_id,description,rate,size,photo,qr_code,id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING product_id, name,description,rate,size,photo,qr_code,id",
+      [name, supplier_id, description, rate, size, photo, ProductQrCode,uniqueCode]
     );
 
     return res
