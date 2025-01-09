@@ -6,7 +6,7 @@ import { generateUniqueCode } from "../../utils/auth";
 
 const addProduct = async (req: Request, res: Response): Promise<any> => {
   try {
-    const { name, description, rate, size, supplier_id ,image,buyprice} = req.body;
+    const { name, description, rate, size, supplier_id ,photo,buyprice} = req.body;
 
     const userNotExist = await client.query(
       "SELECT * FROM supplier WHERE supplier_id = $1",
@@ -55,7 +55,7 @@ const addProduct = async (req: Request, res: Response): Promise<any> => {
         description,
         rate,
         size,
-        image,
+        photo,
         // ProductQrCode,
         uniqueCode,
         buyprice

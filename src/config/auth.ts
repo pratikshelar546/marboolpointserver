@@ -16,7 +16,7 @@ interface Seller {
   name: string;
 }
 
- type User = Admin | Seller;
+type User = Admin | Seller;
 
 const options = {
   jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -33,8 +33,7 @@ export default (passport: PassportStatic) => {
         let findQuery = "";
         if (jwt__payload.role === "admin") {
           findQuery = findAdmin;
-          console.log(findQuery ,[jwt__payload.user]);
-          
+
         } else if (jwt__payload.role === "seller") {
           findQuery = findSeller;
         } else {
@@ -42,7 +41,7 @@ export default (passport: PassportStatic) => {
         }
 
         const find = await client.query(findQuery, [jwt__payload.user]);
-        const doesUserExist = find.rows[0] as User | undefined;
+        const doesUserExist = { role: jwt__payload.role, ...find.rows[0] as User | undefined };
 
         if (!doesUserExist) {
           return done(null, false);

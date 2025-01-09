@@ -5,6 +5,10 @@ interface Order {
   seller_id?: number;
   qyt?: Number;
   product_id?: Number;
+  description: String
+}
+interface Seller {
+  role: String;
 }
 
 const fetchQuery = (table: string, where: string) => {
@@ -18,6 +22,7 @@ const fetchOrder = (where: string) => {
   orders.status, 
   orders.seller_id,
   orders.orderdate, 
+  orders.description,
   product.id AS id, 
   product.product_id, 
   product.name AS productName, 
@@ -46,7 +51,7 @@ WHERE
 };
 const placeOrder = async (req: Request, res: Response): Promise<any> => {
   try {
-    const { product_id, qyt } = req.body as Order;
+    const { product_id, qyt, description } = req.body as Order;
     const { seller_id } = req.user as Order;
 
     if (!product_id || !qyt || !seller_id)
@@ -56,18 +61,16 @@ const placeOrder = async (req: Request, res: Response): Promise<any> => {
       fetchQuery("product", "product_id"),
       [product_id]
     );
-    console.log(productExist.rows[0]);
 
     const product = productExist.rows[0];
-
     if (!product || product.isdeleted)
       return res
         .status(404)
         .json({ success: false, message: "Product not found" });
 
     const order = await client.query(
-      "INSERT INTO orders(product_id,seller_id,qyt) values($1,$2,$3) RETURNING order_id",
-      [product_id, seller_id, qyt]
+      "INSERT INTO orders(product_id,seller_id,qyt,description) values($1,$2,$3,$4) RETURNING order_id",
+      [product_id, seller_id, qyt, description]
     );
 
     res.status(200).json({
@@ -93,7 +96,7 @@ const placeOrder = async (req: Request, res: Response): Promise<any> => {
 
 const updateOrder = async (req: Request, res: Response): Promise<any> => {
   try {
-    const { qyt, order_id, status } = req.body;
+    const { qyt, order_id, status, description } = req.body;
 
     if (!order_id)
       return res
@@ -112,8 +115,8 @@ const updateOrder = async (req: Request, res: Response): Promise<any> => {
 
     if (qyt && orderExist.rows[0].status === "pending") {
       await client.query(
-        "UPDATE orders SET qyt =$1 WHERE order_id = $2 RETURNING qyt",
-        [qyt, order_id]
+        "UPDATE orders SET qyt =$1, description=$2 WHERE order_id = $3 RETURNING qyt",
+        [qyt, description, order_id]
       );
       return res
         .status(200)
@@ -247,8 +250,11 @@ const deleteOrder = async (req: Request, res: Response): Promise<any> => {
 
 const getAllOrders = async (req: Request, res: Response): Promise<any> => {
   try {
+    const { role } = req.user as Seller;
+
+    if (role === "seller") return res.status(401).json({ message: "You dont have access", success: false })
     const orders = await client.query(
-      "SELECT orders.order_id, orders.qyt,orders.status, orders.seller_id, orders.orderdate,product.id AS id,product.product_id,product.name,product.rate, product.photo,product.size FROM orders JOIN product ON orders.product_id = product.product_id JOIN supplier ON product.supplier_id =supplier.supplier_id "
+      "SELECT order_id, orders.qyt, orders.status, orders.seller_id, orders.orderdate, product.id AS id, product.product_id, product.name AS productName, product.rate, product.photo, product.size, product.supplier_id, supplier.name AS supplierName, seller.name AS  sellerName FROM orders JOIN product ON orders.product_id = product.product_id JOIN supplier ON product.supplier_id = supplier.supplier_id JOIN seller ON orders.seller_id = seller.seller_id"
     );
 
     return res.status(200).json({

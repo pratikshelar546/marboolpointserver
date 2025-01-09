@@ -47,5 +47,5 @@ router.delete(
   passport.authenticate("jwt", { session: false }),
   deleteOrder
 );
-router.get("/", getAllOrders);
+router.get("/", passport.authenticate("jwt", { session: false }), getAllOrders);
 export default router;
