@@ -17,7 +17,7 @@ const fetchQuery = (table: string, where: string) => {
 
 const fetchOrder = (where: string) => {
   return `SELECT 
-  order_id,
+  orders.order_id,
   orders.qyt, 
   orders.status, 
   orders.seller_id AS sellerId,
@@ -39,15 +39,18 @@ JOIN
 ON 
   orders.product_id = product.product_id 
 JOIN
-supplier
+  supplier
 ON
-product.supplier_id = supplier.supplier_id 
+  product.supplier_id = supplier.supplier_id 
 JOIN
-seller
+  seller
 ON
-orders.seller_id = seller.seller_id
+  orders.seller_id = seller.seller_id
 WHERE 
-  orders.${where} = $1;`;
+  orders.${where} = $1
+  AND orders.isDeleted = false
+  AND product.isDeleted = false;
+`;
 };
 const placeOrder = async (req: Request, res: Response): Promise<any> => {
   try {
@@ -254,7 +257,7 @@ const getAllOrders = async (req: Request, res: Response): Promise<any> => {
 
     if (role === "seller") return res.status(401).json({ message: "You dont have access", success: false })
     const orders = await client.query(
-      "SELECT order_id, orders.qyt, orders.status, orders.seller_id, orders.orderdate, product.id AS id, product.product_id, product.name AS productName, product.rate, product.photo, product.size, product.supplier_id, supplier.name AS supplierName, seller.name AS  sellerName FROM orders JOIN product ON orders.product_id = product.product_id JOIN supplier ON product.supplier_id = supplier.supplier_id JOIN seller ON orders.seller_id = seller.seller_id"
+      "SELECT order_id, orders.qyt, orders.status, orders.seller_id, orders.orderdate, product.id AS id, product.product_id, product.name AS productName, product.rate, product.photo, product.size, product.supplier_id, supplier.name AS supplierName, seller.name AS  sellerName FROM orders JOIN product ON orders.product_id = product.product_id JOIN supplier ON product.supplier_id = supplier.supplier_id JOIN seller ON orders.seller_id = seller.seller_id WHERE orders.isDeleted = false AND product.isDeleted = false"
     );
 
     return res.status(200).json({
