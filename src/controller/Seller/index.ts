@@ -19,7 +19,7 @@ const createSeller = async (req: Request, res: Response): Promise<any> => {
       [email]
     );
     if (sellerExist?.rows[0]?.isdeleted === true) {
-    const newPassword = await hashPasssword(password);
+      const newPassword = await hashPasssword(password);
 
       await client.query(
         "UPDATE seller SET name= $1,email=$2,phoneNumber=$3,address=$4,password=$5 WHERE seller_id = $6",
@@ -108,7 +108,7 @@ const loginSeller = async (req: Request, res: Response): Promise<any> => {
 const getAllSeller = async (req: Request, res: Response): Promise<any> => {
   try {
     const sellers = await client.query("SELECT * FROM seller WHERE isdeleted = false");
-    if (sellers.rows.length === 0 )
+    if (sellers.rows.length === 0)
       return res
         .status(404)
         .json({ success: false, message: "Seller not found" });
@@ -227,19 +227,40 @@ const getSellerById = async (req: Request, res: Response): Promise<any> => {
     );
 
     if (seller.rows.length === 0 || seller.rows[0].isdeleted === true) {
-      return res.status(404).json({success:false, message: "User not found" });
+      return res.status(404).json({ success: false, message: "User not found" });
     }
     return res
       .status(200)
-      .json({success: true, message: "Product fetched", data: seller.rows[0] });
+      .json({ success: true, message: "Product fetched", data: seller.rows[0] });
   } catch (error) {
     console.log(error);
 
-    return res.status(500).json({success:false,
+    return res.status(500).json({
+      success: false,
       message: "Something went wrong",
       error: error,
     });
   }
 };
 
-export { createSeller, getAllSeller, loginSeller, updateSelller, deleteSeller ,getSellerById};
+const updatePassword = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { password, seller_id } = req.body;
+
+    const hashPass = await hashPasssword(password);
+    const updatePass = await client.query("UPDATE seller set password =$1 WHERE seller_id =$2 RETURNING name", [hashPass, seller_id]);
+    console.log(hashPass, updatePass);
+
+    if (updatePass.rowCount !== 0) return res.status(200).json({ message: "Password chnaged", success: true })
+    return res.status(404).json({ message: "Check creadential", success: false })
+
+  } catch (error) {
+    console.log("*************update admin pass*****************");
+
+    return res.status(500).json({
+      success: false,
+      message: "Somthing went wrong",
+    });
+  }
+}
+export { createSeller, getAllSeller, loginSeller, updateSelller, deleteSeller, getSellerById, updatePassword };

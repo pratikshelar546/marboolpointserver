@@ -82,26 +82,5 @@ const createAdmin = async (req: Request, res: Response): Promise<any> => {
   }
 };
 
-const updatePassword = async (req: Request, res: Response): Promise<any> => {
-  try {
-    const { password, seller_id } = req.body;
-    const { admin_id } = req.user as Admin
 
-    const hashPass = await hashPasssword(password);
-    const updatePass = await client.query("UPDATE seller set password =$1 WHERE seller_id =$2 RETURNING name", [hashPass, seller_id]);
-    console.log(hashPass, updatePass);
-
-    if (updatePass.rowCount !== 0) return res.status(200).json({ message: "Password chnaged", success: true })
-    return res.status(404).json({ message: "Check creadential", success: false })
-
-  } catch (error) {
-    console.log("*************update admin pass*****************");
-    console.log(error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Somthing went wrong",
-    });
-  }
-}
-export { signupAdmin, createAdmin, updatePassword };
+export { signupAdmin, createAdmin };

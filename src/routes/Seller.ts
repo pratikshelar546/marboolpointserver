@@ -5,6 +5,7 @@ import {
   getAllSeller,
   getSellerById,
   loginSeller,
+  updatePassword,
   updateSelller,
 } from "../controller/Seller";
 import passport from "passport";
@@ -23,8 +24,11 @@ router.put(
 router.delete(
   "/delete",
   passport.authenticate("jwt", { session: false }),
-  deleteSeller 
+  deleteSeller
 );
 
-router.get("/getSellerById/:id",getSellerById)
+router.get("/getSellerById/:id", getSellerById)
+
+router.post("/update-password", passport.authenticate("jwt", { session: false }), updatePassword)
+
 export default router;
