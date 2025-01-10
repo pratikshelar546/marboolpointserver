@@ -20,7 +20,7 @@ const fetchOrder = (where: string) => {
   order_id,
   orders.qyt, 
   orders.status, 
-  orders.seller_id,
+  orders.seller_id AS sellerId,
   orders.orderdate, 
   orders.description,
   product.id AS id, 
@@ -47,7 +47,7 @@ seller
 ON
 orders.seller_id = seller.seller_id
 WHERE 
-  ${where} = $1;`;
+  orders.${where} = $1;`;
 };
 const placeOrder = async (req: Request, res: Response): Promise<any> => {
   try {
