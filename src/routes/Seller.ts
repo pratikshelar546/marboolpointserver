@@ -22,7 +22,7 @@ router.put(
 );
 
 router.delete(
-  "/delete",
+  "/delete./:id",
   passport.authenticate("jwt", { session: false }),
   deleteSeller
 );

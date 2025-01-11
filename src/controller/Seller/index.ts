@@ -187,7 +187,7 @@ const updateSelller = async (req: Request, res: Response): Promise<any> => {
 
 const deleteSeller = async (req: Request, res: Response): Promise<any> => {
   try {
-    const { seller_id } = req.body;
+    const { seller_id } = req.params;
 
     const seller = await client.query(
       "SELECT isdeleted FROM seller WHERE seller_id = $1",
