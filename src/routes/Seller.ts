@@ -29,6 +29,6 @@ router.delete(
 
 router.get("/getSellerById/:id", getSellerById)
 
-router.post("/update-password", passport.authenticate("jwt", { session: false }), updatePassword)
+router.post("/update-password/:id", passport.authenticate("jwt", { session: false }), updatePassword)
 
 export default router;

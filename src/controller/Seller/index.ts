@@ -245,11 +245,11 @@ const getSellerById = async (req: Request, res: Response): Promise<any> => {
 
 const updatePassword = async (req: Request, res: Response): Promise<any> => {
   try {
-    const { password, seller_id } = req.body;
+    const { id } = req.params;
+    const { password } = req.body;
 
     const hashPass = await hashPasssword(password);
-    const updatePass = await client.query("UPDATE seller set password =$1 WHERE seller_id =$2 RETURNING name", [hashPass, seller_id]);
-    console.log(hashPass, updatePass);
+    const updatePass = await client.query("UPDATE seller set password =$1 WHERE seller_id =$2 RETURNING name", [hashPass, id]);
 
     if (updatePass.rowCount !== 0) return res.status(200).json({ message: "Password chnaged", success: true })
     return res.status(404).json({ message: "Check creadential", success: false })
