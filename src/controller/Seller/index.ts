@@ -132,7 +132,6 @@ const getAllSeller = async (req: Request, res: Response): Promise<any> => {
 
 const updateSelller = async (req: Request, res: Response): Promise<any> => {
   try {
-    console.log(req?.user);
 
     // const user: string = req?.user;
     const { seller_id } = req.user as Seller;
