@@ -99,7 +99,8 @@ const placeOrder = async (req: Request, res: Response): Promise<any> => {
 
 const updateOrder = async (req: Request, res: Response): Promise<any> => {
   try {
-    const { qyt, order_id, status, description } = req.body;
+    const {order_id}=req.params;
+    const { qyt, status, description } = req.body;
 
     if (!order_id)
       return res

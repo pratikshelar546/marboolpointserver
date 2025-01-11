@@ -19,7 +19,7 @@ router.post(
 );
 
 router.put(
-  "/update",
+  "/update/:order_id",
   passport.authenticate("jwt", { session: false }),
   updateOrder
 );
