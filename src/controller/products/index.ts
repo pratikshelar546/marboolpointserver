@@ -4,9 +4,17 @@ import { v2 as cloudinary } from "cloudinary";
 import QRCode from "qrcode";
 import { generateUniqueCode } from "../../utils/auth";
 
+function extractPublicId(url: string) {
+  const parts = url.split("/");
+  const fileName = parts.pop() || ""; // Get the file name with extension
+  const folder = parts.slice(parts.indexOf("upload") + 2).join("/"); // Get the folder
+  const publicId = fileName.split(".")[0]; // Remove the file extension
+  return folder ? `${folder}/${publicId}` : publicId;
+}
+
 const addProduct = async (req: Request, res: Response): Promise<any> => {
   try {
-    const { name, description, rate, size, supplier_id ,photo,buyprice} = req.body;
+    const { name, description, rate, size, supplier_id, photo, buyprice } = req.body;
 
     const userNotExist = await client.query(
       "SELECT * FROM supplier WHERE supplier_id = $1",
@@ -20,17 +28,7 @@ const addProduct = async (req: Request, res: Response): Promise<any> => {
       [supplier_id, name]
     );
     if (productMatch.rowCount !== 0) {
-      if (productMatch.rows[0].isdeleted) {
-        const updateDelete = await client.query(
-          "UPDATE product SET isdeleted=false WHERE product_id=$1 RETURNING product_id,name,rate,size",
-          [productMatch.rows[0].product_id]
-        );
-        return res.status(200).json({
-          success: true,
-          message: "Product added",
-          data: updateDelete.rows[0],
-        });
-      }
+
       return res.status(400).json({
         success: false,
         message: "Product already exist with same name for same supplier",
@@ -69,7 +67,6 @@ const addProduct = async (req: Request, res: Response): Promise<any> => {
     });
   } catch (error) {
     console.log(error);
-
     return res
       .status(500)
       .json({ success: false, message: "Something went wrong", error: error });
@@ -79,12 +76,12 @@ const addProduct = async (req: Request, res: Response): Promise<any> => {
 const getAllProduct = async (req: Request, res: Response): Promise<any> => {
   try {
     const products = await client.query(
-      "SELECT product.*, supplier.name as supplier_name FROM product JOIN supplier ON product.supplier_id = supplier.supplier_id WHERE product.isdeleted=false;"
+      "SELECT product.*, supplier.name as supplier_name FROM product JOIN supplier ON product.supplier_id = supplier.supplier_id"
     );
-    if (products.rows.length === 0 || products.rows[0].isdeleted === true) {
+    if (products.rows.length === 0) {
       return res
-        .status(204)
-        .json({ success: false, message: "There is no product exist" });
+        .status(200)
+        .json({ success: true, message: "There is no product exist" });
     }
 
     return res.status(200).json({
@@ -117,7 +114,7 @@ const getProductById = async (req: Request, res: Response): Promise<any> => {
   try {
     const product = await client.query(query, [values]);
 
-    if (product.rows.length === 0 || product.rows[0].isdelted === true) {
+    if (product.rows.length === 0) {
       return res
         .status(404)
         .json({ success: false, message: "product not found" });
@@ -185,8 +182,9 @@ const updateProduct = async (req: Request, res: Response): Promise<any> => {
           );
         });
 
-      const { url } = await uploadPromise; // Await the promise and destructure the URL
+      const { url, public_id } = await uploadPromise; // Await the promise and destructure the URL
       photo = url; // Assign URL to photo
+      console.log(public_id, url);
 
       query += `photo =$${index} , `;
       values.push(photo);
@@ -225,20 +223,21 @@ const updateProduct = async (req: Request, res: Response): Promise<any> => {
 const deleteProduct = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
+    const productExist = await client.query(`SELECT * FROM product WHERE product_id=$1`, [id])
+    console.log(productExist.rows);
 
-    const product = await client.query(
-      "SELECT isdeleted FROM product WHERE product_id = $1",
-      [id]
-    );
+    if (productExist.rowCount === 0) return res.status(404).json({ messgae: "product not found", success: false })
 
-    if (product.rows[0].length === 0 || product.rows[0].isdeleted == true)
-      return res
-        .status(404)
-        .json({ message: "Product not found", success: false });
+    await client.query(`DELETE FROM orders WHERE product_id=$1`, [id])
     await client.query(
-      `UPDATE product set isdeleted=true WHERE product_id=$1`,
+      `DELETE FROM product WHERE product_id=$1`,
       [id]
     );
+    const publicId = extractPublicId(productExist.rows[0].photo);
+
+    const result = await cloudinary.uploader.destroy(publicId);
+    console.log(result);
+
 
     return res
       .status(200)

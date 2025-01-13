@@ -56,6 +56,7 @@ const placeOrder = async (req: Request, res: Response): Promise<any> => {
   try {
     const { product_id, qyt, description } = req.body as Order;
     const { seller_id } = req.user as Order;
+console.log(req.user);
 
     if (!product_id || !qyt || !seller_id)
       return res.status(400).json({ message: "Invalid data", success: false });

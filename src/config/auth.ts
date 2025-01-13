@@ -27,8 +27,12 @@ const findAdmin = "SELECT admin_id, name FROM admin WHERE admin_id = $1";
 const findSeller = "SELECT seller_id, name FROM seller WHERE seller_id = $1";
 
 export default (passport: PassportStatic) => {
+  console.log(passport);
+  
   passport.use(
     new JWTStrategy(options, async (jwt__payload, done) => {
+      console.log(jwt__payload);
+      
       try {
         let findQuery = "";
         if (jwt__payload.role === "admin") {
